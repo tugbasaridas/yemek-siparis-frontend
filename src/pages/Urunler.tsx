@@ -5,10 +5,14 @@ import UrunKarti from "../components/UrunKarti";
 import { useSepet } from "../sepet/SepetContext";
 import { useAuth } from "../auth/AuthContext";
 import Modal from "../components/Modal";
+import KategoriFiltre from "../components/KategoriFiltre";
 import toast from "react-hot-toast";
 
 export default function Urunler() {
   const [urunler, setUrunler] = useState<Urun[]>([]);
+  const [kategoriler, setKategoriler] = useState<string[]>([]);
+  const [seciliKategori, setSeciliKategori] = useState("Hepsi");
+
   const { sepeteEkleAdetli } = useSepet();
   const { kullanici } = useAuth();
 
@@ -23,12 +27,27 @@ export default function Urunler() {
     kategoriId: "",
   });
 
-  const urunleriGetir = () =>
-    api.get("/urunler").then((res) => setUrunler(res.data));
+  const urunleriGetir = async () => {
+    const res = await api.get("/urunler");
+    setUrunler(res.data);
+  };
+
+  const kategorileriGetir = async () => {
+    const res = await api.get("/kategoriler");
+    setKategoriler(res.data.map((k: any) => k.ad));
+  };
 
   useEffect(() => {
     urunleriGetir();
+    kategorileriGetir();
   }, []);
+
+  const filtrelenmisUrunler =
+    seciliKategori === "Hepsi"
+      ? urunler
+      : urunler.filter(
+          (u) => u.kategori?.ad === seciliKategori
+        );
 
   const modalAc = (urun?: Urun) => {
     if (urun) {
@@ -71,7 +90,7 @@ export default function Urunler() {
   };
 
   const sil = async (id: number) => {
-  if (!confirm("Ürün silinsin mi?")) return;
+    if (!confirm("Ürün silinsin mi?")) return;
 
     try {
       await api.delete(`/urunler/${id}`);
@@ -93,8 +112,15 @@ export default function Urunler() {
         </button>
       )}
 
+      {/* KATEGORİ FİLTRESİ */}
+      <KategoriFiltre
+        kategoriler={kategoriler}
+        secili={seciliKategori}
+        setSecili={setSeciliKategori}
+      />
+
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {urunler.map((u) => (
+        {filtrelenmisUrunler.map((u) => (
           <UrunKarti
             key={u.id}
             urun={u}
@@ -155,3 +181,4 @@ export default function Urunler() {
     </div>
   );
 }
+
