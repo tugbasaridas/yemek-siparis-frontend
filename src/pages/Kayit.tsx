@@ -22,7 +22,7 @@ export default function Kayit() {
       toast.success("Kayıt başarılı");
       navigate("/giris");
     } catch (err) {
-      toast.error("Kayıt sırasında bir hata oluştu");
+     
     }
   };
 
@@ -61,3 +61,4 @@ export default function Kayit() {
     </div>
   );
 }
+
